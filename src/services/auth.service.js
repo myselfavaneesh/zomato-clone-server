@@ -1,13 +1,12 @@
 import User from "../models/user.model.js";
-import { generateAccessToken } from "../utils/jwt.utils.js";
-import { AppError } from "../utils/AppError.js";
+import { AppError, jwt } from "#utils"
 import { createCaptain } from "./captain.service.js";
 
-export const registerUser = async ({ name, email, password, role }) => {
+const registerUser = async ({ name, email, password, role }) => {
 
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-        throw new AppError("Email already exists", 400);
+        throw new AppError("Email already exists", 409);
     }
 
     const user = new User({ name, email, password, role });
@@ -20,8 +19,8 @@ export const registerUser = async ({ name, email, password, role }) => {
 
     await user.save();
 
-
-    const token = generateAccessToken({
+    console.log(jwt)
+    const token = jwt.generateAccessToken({
         userId: user._id,
         role: user.role
     });
@@ -29,16 +28,16 @@ export const registerUser = async ({ name, email, password, role }) => {
     return { user, token };
 };
 
-export const loginUser = async ({ email, password }) => {
+const loginUser = async ({ email, password }) => {
     const user = await User.findOne({ email }).select('+password');
     if (!user || !(await user.comparePassword(password))) {
         throw new AppError("Invalid email or password", 401)
     }
-    const token = generateAccessToken({ userId: user._id, role: user.role });
+    const token = jwt.generateAccessToken({ userId: user._id, role: user.role });
     return { user, token };
 }
 
-export const fetchUserById = async (userId) => {
+const fetchUserById = async (userId) => {
     const user = await User.findById(userId).select("-password -__v -createdAt -updatedAt _id");
     if (!user) {
         throw new AppError("User not found", 401);
@@ -46,3 +45,10 @@ export const fetchUserById = async (userId) => {
     return user;
 
 }
+
+
+export default {
+    registerUser,
+    loginUser,
+    fetchUserById
+};

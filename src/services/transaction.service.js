@@ -1,5 +1,6 @@
 import Transaction from "../models/transaction.model.js";
-import {AppError} from "../utils/appError.js";
+import { AppError } from "#utils"
+
 
 
 export const createTransaction = async (transactionData) => {

@@ -1,4 +1,4 @@
-import { sendResponse } from '../utils/res.utils.js';
+import { sendResponse } from "#utils"
 import { createOrder, getOrderById, getOrdersByCustomerId } from '../services/order.service.js';
 
 

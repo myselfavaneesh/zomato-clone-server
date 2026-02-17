@@ -1,5 +1,5 @@
 import { createCuisine, getAllCuisines, getCuisineById, updateCuisine, deleteCuisine } from '../services/cuisine.service.js';
-import { sendResponse } from '../utils/res.utils.js';
+import { sendResponse } from "#utils"
 
 
 export const createCuisineController = async (req, res, next) => {

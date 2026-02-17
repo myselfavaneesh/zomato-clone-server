@@ -1,9 +1,9 @@
 import jwt from "jsonwebtoken"
-import { AppError } from "../utils/AppError.js";
+import { AppError } from "#utils"
 // const tokenBlackListModel = require("../models/blackList.model.js")
 
 
-export async function authenticate(req, res, next) {
+async function authenticate(req, res, next) {
 
     const token = req.cookies.accessToken
 
@@ -37,7 +37,7 @@ export async function authenticate(req, res, next) {
 }
 
 
-export const authorizeRoles = (...allowedRoles) => {
+const authorizeRoles = (...allowedRoles) => {
     return (req, res, next) => {
         if (!req.user) {
             throw new AppError("User not authenticated", 401);
@@ -50,3 +50,5 @@ export const authorizeRoles = (...allowedRoles) => {
         next();
     };
 };
+
+export default { authenticate, authorizeRoles }

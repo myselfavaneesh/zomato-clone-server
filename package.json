@@ -3,6 +3,18 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
+  "type": "module",
+  "imports": {
+    "#configs": "./src/configs/export.js",
+    "#controllers": "./src/controllers/export.js",
+    "#middlewares": "./src/middlewares/export.js",
+    "#models": "./src/models/export.js",
+    "#routes": "./src/routes/export.js",
+    "#services": "./src/services/export.js",
+    "#sockets": "./src/sockets/export.js",
+    "#utils": "./src/utils/export.js",
+    "#validators": "./src/validators/export.js"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "npx nodemon index.js",
@@ -11,7 +23,6 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "module",
   "dependencies": {
     "@imagekit/nodejs": "^7.3.0",
     "bcrypt": "^6.0.0",

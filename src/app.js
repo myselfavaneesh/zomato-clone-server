@@ -4,13 +4,12 @@ import 'dotenv/config';
 import cors from 'cors';
 import morgan from 'morgan';
 import { errorHandler } from './middlewares/error.middleware.js';
-import { AppError } from './utils/AppError.js';
 import cookieParser from "cookie-parser";
 import swaggerUi from 'swagger-ui-express';
 import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
-
+import { AppError } from "#utils";
 import authRoutes from './routes/auth.route.js';
 import restauRoutes from './routes/restau.route.js';
 import cuisineRoutes from './routes/cusine.route.js';

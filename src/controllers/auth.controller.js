@@ -1,11 +1,11 @@
-import { registerUser, loginUser, fetchUserById } from "../services/auth.service.js";
-import { sendResponse } from "../utils/res.utils.js";
+import { sendResponse } from "#utils"
+import { authServices } from "#services"
 
 export const register = async (req, res, next) => {
     try {
         const { name, email, password, role } = req.body;
 
-        const { user, token } = await registerUser({
+        const { user, token } = await authServices.registerUser({
             name,
             email,
             password,
@@ -34,7 +34,7 @@ export const login = async (req, res, next) => {
     try {
         const { email, password } = req.body;
 
-        const { user, token } = await loginUser({ email, password });
+        const { user, token } = await authServices.loginUser({ email, password });
 
         res.cookie('accessToken', token, {
             httpOnly: true,
@@ -56,9 +56,12 @@ export const login = async (req, res, next) => {
 
 export const fetchUser = async (req, res, next) => {
     try {
-        const user = await fetchUserById(req.user.userId);
+        const user = await authServices.fetchUserById(req.user.userId);
         sendResponse(res, 200, "User fetched successfully", user);
     } catch (error) {
         next(error); // centralized error handler
     }
 };
+
+
+export default { register, login, fetchUser };

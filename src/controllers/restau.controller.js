@@ -1,4 +1,4 @@
-import { sendResponse } from "../utils/res.utils.js";
+import { sendResponse } from "#utils"
 import { createRestaurant, getAllRestaurants, getRestaurantById, updateRestau, deleteRestau } from "../services/restaurant.service.js";
 
 export const createNewRestaurant = async (req, res, next) => {

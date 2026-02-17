@@ -1,5 +1,5 @@
 import { Server } from "socket.io";
-import { AppError } from "../utils/appError.js";
+import { AppError } from "#utils"
 import { assignCaptainToOrder } from "../services/order.service.js";
 import { notifyUserOrderConfirmed } from "./client.socket.js";
 

@@ -1,16 +1,12 @@
 {
   "openapi": "3.0.0",
   "info": {
-    "title": "Zomato Clone API",
+    "title": "Zomato Clone - Authentication API",
     "version": "1.0.0",
-    "description": "A comprehensive API for a Zomato clone application with authentication, restaurant management, and cuisine management",
+    "description": "Authentication endpoints for Zomato Clone application. This API provides user registration, login, and profile management functionality.",
     "contact": {
       "name": "API Support",
       "email": "support@zomatoclone.com"
-    },
-    "license": {
-      "name": "MIT",
-      "url": "https://opensource.org/licenses/MIT"
     }
   },
   "servers": [
@@ -27,14 +23,6 @@
     {
       "name": "Authentication",
       "description": "User authentication and authorization endpoints"
-    },
-    {
-      "name": "Restaurants",
-      "description": "Restaurant management endpoints"
-    },
-    {
-      "name": "Cuisines",
-      "description": "Cuisine/Menu item management endpoints"
     }
   ],
   "paths": {
@@ -42,34 +30,40 @@
       "post": {
         "tags": ["Authentication"],
         "summary": "Register a new user",
-        "description": "Create a new user account with email and password",
+        "description": "Creates a new user account with the provided credentials. Returns user details and sets an authentication cookie.",
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "type": "object",
-                "required": ["name", "email", "password"],
-                "properties": {
-                  "name": {
-                    "type": "string",
-                    "example": "John Doe"
-                  },
-                  "email": {
-                    "type": "string",
-                    "format": "email",
-                    "example": "john@example.com"
-                  },
-                  "password": {
-                    "type": "string",
-                    "format": "password",
-                    "minLength": 6,
-                    "example": "Password123!"
-                  },
-                  "role": {
-                    "type": "string",
-                    "enum": ["user", "admin", "owner"],
-                    "default": "user"
+                "$ref": "#/components/schemas/RegisterRequest"
+              },
+              "examples": {
+                "customer": {
+                  "summary": "Register as Customer",
+                  "value": {
+                    "name": "John Doe",
+                    "email": "john@example.com",
+                    "password": "SecurePass123!",
+                    "role": "customer"
+                  }
+                },
+                "restaurant": {
+                  "summary": "Register as Restaurant",
+                  "value": {
+                    "name": "Pizza Palace",
+                    "email": "contact@pizzapalace.com",
+                    "password": "RestaurantPass123!",
+                    "role": "restaurant"
+                  }
+                },
+                "captain": {
+                  "summary": "Register as Delivery Captain",
+                  "value": {
+                    "name": "Mike Driver",
+                    "email": "mike@example.com",
+                    "password": "CaptainPass123!",
+                    "role": "captain"
                   }
                 }
               }
@@ -79,44 +73,70 @@
         "responses": {
           "201": {
             "description": "User registered successfully",
+            "headers": {
+              "Set-Cookie": {
+                "schema": {
+                  "type": "string",
+                  "example": "accessToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...; HttpOnly; Max-Age=604800"
+                },
+                "description": "JWT token set as HTTP-only cookie"
+              }
+            },
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "User registered successfully"
-                    },
-                    "data": {
-                      "$ref": "#/components/schemas/User"
-                    },
-                    "token": {
-                      "type": "string",
-                      "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-                    }
+                  "$ref": "#/components/schemas/AuthResponse"
+                },
+                "example": {
+                  "success": true,
+                  "message": "User registered successfully",
+                  "data": {
+                    "name": "John Doe",
+                    "email": "john@example.com",
+                    "role": "customer"
                   }
                 }
               }
             }
           },
           "400": {
-            "$ref": "#/components/responses/ValidationError"
-          },
-          "409": {
-            "description": "User already exists",
+            "description": "Validation error or user already exists",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Error"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 },
-                "example": {
-                  "success": false,
-                  "message": "User already exists with this email"
+                "examples": {
+                  "validationError": {
+                    "summary": "Validation Error",
+                    "value": {
+                      "success": false,
+                      "message": "Validation failed",
+                      "errors": [
+                        {
+                          "field": "email",
+                          "message": "Invalid email format"
+                        }
+                      ]
+                    }
+                  },
+                  "userExists": {
+                    "summary": "User Already Exists",
+                    "value": {
+                      "success": false,
+                      "message": "User with this email already exists"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -128,26 +148,17 @@
       "post": {
         "tags": ["Authentication"],
         "summary": "Login user",
-        "description": "Authenticate user with email and password",
+        "description": "Authenticates a user with email and password. Returns user details and sets an authentication cookie.",
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "type": "object",
-                "required": ["email", "password"],
-                "properties": {
-                  "email": {
-                    "type": "string",
-                    "format": "email",
-                    "example": "john@example.com"
-                  },
-                  "password": {
-                    "type": "string",
-                    "format": "password",
-                    "example": "Password123!"
-                  }
-                }
+                "$ref": "#/components/schemas/LoginRequest"
+              },
+              "example": {
+                "email": "john@example.com",
+                "password": "SecurePass123!"
               }
             }
           }
@@ -159,48 +170,68 @@
               "Set-Cookie": {
                 "schema": {
                   "type": "string",
-                  "example": "token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...; Path=/; HttpOnly"
-                }
+                  "example": "accessToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...; HttpOnly; Max-Age=604800"
+                },
+                "description": "JWT token set as HTTP-only cookie (valid for 7 days)"
               }
             },
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Login successful"
-                    },
-                    "data": {
-                      "$ref": "#/components/schemas/User"
-                    },
-                    "token": {
-                      "type": "string",
-                      "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-                    }
+                  "$ref": "#/components/schemas/AuthResponse"
+                },
+                "example": {
+                  "success": true,
+                  "message": "Login successful",
+                  "data": {
+                    "name": "John Doe",
+                    "email": "john@example.com",
+                    "role": "customer"
                   }
                 }
               }
             }
           },
           "400": {
-            "$ref": "#/components/responses/ValidationError"
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "success": false,
+                  "message": "Validation failed",
+                  "errors": [
+                    {
+                      "field": "email",
+                      "message": "Email is required"
+                    }
+                  ]
+                }
+              }
+            }
           },
           "401": {
             "description": "Invalid credentials",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Error"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 },
                 "example": {
                   "success": false,
                   "message": "Invalid email or password"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -211,540 +242,56 @@
     "/api/auth/me": {
       "get": {
         "tags": ["Authentication"],
-        "summary": "Get current user",
-        "description": "Fetch the currently authenticated user's information",
+        "summary": "Get current user profile",
+        "description": "Retrieves the profile information of the currently authenticated user. Requires valid authentication cookie.",
         "security": [
-          {
-            "bearerAuth": []
-          },
           {
             "cookieAuth": []
           }
         ],
         "responses": {
           "200": {
-            "description": "User fetched successfully",
+            "description": "User profile fetched successfully",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "data": {
-                      "$ref": "#/components/schemas/User"
-                    }
+                  "$ref": "#/components/schemas/UserProfileResponse"
+                },
+                "example": {
+                  "success": true,
+                  "message": "User fetched successfully",
+                  "data": {
+                    "_id": "507f1f77bcf86cd799439011",
+                    "name": "John Doe",
+                    "email": "john@example.com",
+                    "role": "customer",
+                    "createdAt": "2024-01-15T10:30:00.000Z",
+                    "updatedAt": "2024-01-15T10:30:00.000Z"
                   }
                 }
               }
             }
           },
           "401": {
-            "$ref": "#/components/responses/UnauthorizedError"
-          }
-        }
-      }
-    },
-    "/api/restaurants": {
-      "get": {
-        "tags": ["Restaurants"],
-        "summary": "Get all restaurants",
-        "description": "Fetch all restaurants (Admin and Owner only)",
-        "security": [
-          {
-            "bearerAuth": []
-          },
-          {
-            "cookieAuth": []
-          }
-        ],
-        "parameters": [
-          {
-            "in": "query",
-            "name": "page",
-            "schema": {
-              "type": "integer",
-              "default": 1
-            },
-            "description": "Page number for pagination"
-          },
-          {
-            "in": "query",
-            "name": "limit",
-            "schema": {
-              "type": "integer",
-              "default": 10
-            },
-            "description": "Number of items per page"
-          },
-          {
-            "in": "query",
-            "name": "search",
-            "schema": {
-              "type": "string"
-            },
-            "description": "Search by restaurant name"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Restaurants fetched successfully",
+            "description": "Unauthorized - No valid authentication token",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "data": {
-                      "type": "array",
-                      "items": {
-                        "$ref": "#/components/schemas/Restaurant"
-                      }
-                    },
-                    "pagination": {
-                      "type": "object",
-                      "properties": {
-                        "total": {
-                          "type": "integer"
-                        },
-                        "page": {
-                          "type": "integer"
-                        },
-                        "pages": {
-                          "type": "integer"
-                        }
-                      }
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "noToken": {
+                    "summary": "No Token Provided",
+                    "value": {
+                      "success": false,
+                      "message": "Authentication token not found"
                     }
-                  }
-                }
-              }
-            }
-          },
-          "401": {
-            "$ref": "#/components/responses/UnauthorizedError"
-          },
-          "403": {
-            "$ref": "#/components/responses/ForbiddenError"
-          }
-        }
-      },
-      "post": {
-        "tags": ["Restaurants"],
-        "summary": "Create a new restaurant",
-        "description": "Create a new restaurant (Admin and Owner only)",
-        "security": [
-          {
-            "bearerAuth": []
-          },
-          {
-            "cookieAuth": []
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "required": ["name", "address", "phone"],
-                "properties": {
-                  "name": {
-                    "type": "string",
-                    "example": "The Italian Corner"
                   },
-                  "address": {
-                    "type": "string",
-                    "example": "123 Main Street, New York, NY 10001"
-                  },
-                  "phone": {
-                    "type": "string",
-                    "example": "+1-234-567-8900"
-                  },
-                  "description": {
-                    "type": "string",
-                    "example": "Authentic Italian cuisine"
-                  },
-                  "rating": {
-                    "type": "number",
-                    "format": "float",
-                    "minimum": 0,
-                    "maximum": 5,
-                    "example": 4.5
-                  },
-                  "image": {
-                    "type": "string",
-                    "example": "https://example.com/images/restaurant.jpg"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Restaurant created successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Restaurant created successfully"
-                    },
-                    "data": {
-                      "$ref": "#/components/schemas/Restaurant"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/ValidationError"
-          },
-          "401": {
-            "$ref": "#/components/responses/UnauthorizedError"
-          },
-          "403": {
-            "$ref": "#/components/responses/ForbiddenError"
-          }
-        }
-      }
-    },
-    "/api/restaurants/{id}": {
-      "get": {
-        "tags": ["Restaurants"],
-        "summary": "Get restaurant by ID",
-        "description": "Fetch a specific restaurant by its ID",
-        "security": [
-          {
-            "bearerAuth": []
-          },
-          {
-            "cookieAuth": []
-          }
-        ],
-        "parameters": [
-          {
-            "in": "path",
-            "name": "id",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "description": "Restaurant ID"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Restaurant fetched successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "data": {
-                      "$ref": "#/components/schemas/Restaurant"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "401": {
-            "$ref": "#/components/responses/UnauthorizedError"
-          },
-          "404": {
-            "$ref": "#/components/responses/NotFoundError"
-          }
-        }
-      },
-      "put": {
-        "tags": ["Restaurants"],
-        "summary": "Update restaurant",
-        "description": "Update an existing restaurant (Admin only)",
-        "security": [
-          {
-            "bearerAuth": []
-          },
-          {
-            "cookieAuth": []
-          }
-        ],
-        "parameters": [
-          {
-            "in": "path",
-            "name": "id",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "description": "Restaurant ID"
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "name": {
-                    "type": "string"
-                  },
-                  "address": {
-                    "type": "string"
-                  },
-                  "phone": {
-                    "type": "string"
-                  },
-                  "description": {
-                    "type": "string"
-                  },
-                  "rating": {
-                    "type": "number",
-                    "format": "float"
-                  },
-                  "image": {
-                    "type": "string"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Restaurant updated successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Restaurant updated successfully"
-                    },
-                    "data": {
-                      "$ref": "#/components/schemas/Restaurant"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/ValidationError"
-          },
-          "401": {
-            "$ref": "#/components/responses/UnauthorizedError"
-          },
-          "403": {
-            "$ref": "#/components/responses/ForbiddenError"
-          },
-          "404": {
-            "$ref": "#/components/responses/NotFoundError"
-          }
-        }
-      },
-      "delete": {
-        "tags": ["Restaurants"],
-        "summary": "Delete restaurant",
-        "description": "Delete a restaurant (Admin only)",
-        "security": [
-          {
-            "bearerAuth": []
-          },
-          {
-            "cookieAuth": []
-          }
-        ],
-        "parameters": [
-          {
-            "in": "path",
-            "name": "id",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "description": "Restaurant ID"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Restaurant deleted successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Restaurant deleted successfully"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "401": {
-            "$ref": "#/components/responses/UnauthorizedError"
-          },
-          "403": {
-            "$ref": "#/components/responses/ForbiddenError"
-          },
-          "404": {
-            "$ref": "#/components/responses/NotFoundError"
-          }
-        }
-      }
-    },
-    "/api/cuisines": {
-      "post": {
-        "tags": ["Cuisines"],
-        "summary": "Create a new cuisine",
-        "description": "Create a new cuisine/menu item (Admin and Owner only)",
-        "security": [
-          {
-            "bearerAuth": []
-          },
-          {
-            "cookieAuth": []
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "required": ["name", "restaurant"],
-                "properties": {
-                  "name": {
-                    "type": "string",
-                    "example": "Margherita Pizza"
-                  },
-                  "description": {
-                    "type": "string",
-                    "example": "Classic Italian pizza"
-                  },
-                  "price": {
-                    "type": "number",
-                    "format": "float",
-                    "example": 12.99
-                  },
-                  "category": {
-                    "type": "string",
-                    "example": "Pizza"
-                  },
-                  "image": {
-                    "type": "string",
-                    "example": "https://example.com/images/pizza.jpg"
-                  },
-                  "restaurant": {
-                    "type": "string",
-                    "example": "60d5ec49f1b2c72b8c8e4f1a"
-                  },
-                  "isAvailable": {
-                    "type": "boolean",
-                    "default": true
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Cuisine created successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Cuisine created successfully"
-                    },
-                    "data": {
-                      "$ref": "#/components/schemas/Cuisine"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/ValidationError"
-          },
-          "401": {
-            "$ref": "#/components/responses/UnauthorizedError"
-          },
-          "403": {
-            "$ref": "#/components/responses/ForbiddenError"
-          }
-        }
-      }
-    },
-    "/api/cuisines/restaurant/{restaurantId}": {
-      "get": {
-        "tags": ["Cuisines"],
-        "summary": "Get all cuisines by restaurant",
-        "description": "Fetch all cuisines for a specific restaurant",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "restaurantId",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "description": "Restaurant ID"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Cuisines fetched successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "data": {
-                      "type": "array",
-                      "items": {
-                        "$ref": "#/components/schemas/Cuisine"
-                      }
+                  "invalidToken": {
+                    "summary": "Invalid Token",
+                    "value": {
+                      "success": false,
+                      "message": "Invalid or expired token"
                     }
                   }
                 }
@@ -752,196 +299,28 @@
             }
           },
           "404": {
-            "$ref": "#/components/responses/NotFoundError"
-          }
-        }
-      }
-    },
-    "/api/cuisines/{id}": {
-      "get": {
-        "tags": ["Cuisines"],
-        "summary": "Get cuisine by ID",
-        "description": "Fetch a specific cuisine by its ID",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "id",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "description": "Cuisine ID"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Cuisine fetched successfully",
+            "description": "User not found",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "data": {
-                      "$ref": "#/components/schemas/Cuisine"
-                    }
-                  }
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "success": false,
+                  "message": "User not found"
                 }
               }
             }
           },
-          "404": {
-            "$ref": "#/components/responses/NotFoundError"
-          }
-        }
-      },
-      "put": {
-        "tags": ["Cuisines"],
-        "summary": "Update cuisine",
-        "description": "Update an existing cuisine (Admin and Owner only)",
-        "security": [
-          {
-            "bearerAuth": []
-          },
-          {
-            "cookieAuth": []
-          }
-        ],
-        "parameters": [
-          {
-            "in": "path",
-            "name": "id",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "description": "Cuisine ID"
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "name": {
-                    "type": "string"
-                  },
-                  "description": {
-                    "type": "string"
-                  },
-                  "price": {
-                    "type": "number",
-                    "format": "float"
-                  },
-                  "category": {
-                    "type": "string"
-                  },
-                  "image": {
-                    "type": "string"
-                  },
-                  "isAvailable": {
-                    "type": "boolean"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Cuisine updated successfully",
+          "500": {
+            "description": "Internal server error",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Cuisine updated successfully"
-                    },
-                    "data": {
-                      "$ref": "#/components/schemas/Cuisine"
-                    }
-                  }
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
-          },
-          "400": {
-            "$ref": "#/components/responses/ValidationError"
-          },
-          "401": {
-            "$ref": "#/components/responses/UnauthorizedError"
-          },
-          "403": {
-            "$ref": "#/components/responses/ForbiddenError"
-          },
-          "404": {
-            "$ref": "#/components/responses/NotFoundError"
-          }
-        }
-      },
-      "delete": {
-        "tags": ["Cuisines"],
-        "summary": "Delete cuisine",
-        "description": "Delete a cuisine (Admin and Owner only)",
-        "security": [
-          {
-            "bearerAuth": []
-          },
-          {
-            "cookieAuth": []
-          }
-        ],
-        "parameters": [
-          {
-            "in": "path",
-            "name": "id",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "description": "Cuisine ID"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Cuisine deleted successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Cuisine deleted successfully"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "401": {
-            "$ref": "#/components/responses/UnauthorizedError"
-          },
-          "403": {
-            "$ref": "#/components/responses/ForbiddenError"
-          },
-          "404": {
-            "$ref": "#/components/responses/NotFoundError"
           }
         }
       }
@@ -949,178 +328,146 @@
   },
   "components": {
     "securitySchemes": {
-      "bearerAuth": {
-        "type": "http",
-        "scheme": "bearer",
-        "bearerFormat": "JWT",
-        "description": "Enter your JWT token"
-      },
       "cookieAuth": {
         "type": "apiKey",
         "in": "cookie",
-        "name": "token",
-        "description": "JWT token stored in cookie"
+        "name": "accessToken",
+        "description": "JWT token stored in HTTP-only cookie. Automatically sent with requests."
       }
     },
     "schemas": {
-      "User": {
+      "RegisterRequest": {
         "type": "object",
-        "required": ["name", "email", "password"],
+        "required": ["name", "email", "password", "role"],
         "properties": {
-          "_id": {
-            "type": "string",
-            "description": "Auto-generated user ID",
-            "example": "60d5ec49f1b2c72b8c8e4f1a"
-          },
           "name": {
             "type": "string",
-            "description": "User full name",
+            "description": "Full name of the user",
+            "minLength": 2,
+            "maxLength": 100,
             "example": "John Doe"
           },
           "email": {
             "type": "string",
             "format": "email",
-            "description": "User email address",
+            "description": "Valid email address",
             "example": "john@example.com"
           },
           "password": {
             "type": "string",
             "format": "password",
-            "description": "User password (hashed)"
+            "description": "Strong password (min 8 characters, recommended to include uppercase, lowercase, numbers, and special characters)",
+            "minLength": 8,
+            "example": "SecurePass123!"
           },
           "role": {
             "type": "string",
-            "enum": ["user", "admin", "owner"],
-            "default": "user",
-            "description": "User role",
-            "example": "user"
-          },
-          "createdAt": {
-            "type": "string",
-            "format": "date-time",
-            "description": "Account creation timestamp"
-          },
-          "updatedAt": {
-            "type": "string",
-            "format": "date-time",
-            "description": "Last update timestamp"
+            "enum": ["customer", "restaurant", "captain"],
+            "description": "User role in the system",
+            "example": "customer"
           }
         }
       },
-      "Restaurant": {
+      "LoginRequest": {
         "type": "object",
-        "required": ["name", "address", "phone"],
+        "required": ["email", "password"],
         "properties": {
-          "_id": {
+          "email": {
             "type": "string",
-            "description": "Auto-generated restaurant ID",
-            "example": "60d5ec49f1b2c72b8c8e4f1b"
+            "format": "email",
+            "description": "Registered email address",
+            "example": "john@example.com"
           },
-          "name": {
+          "password": {
             "type": "string",
-            "description": "Restaurant name",
-            "example": "The Italian Corner"
-          },
-          "address": {
-            "type": "string",
-            "description": "Restaurant address",
-            "example": "123 Main Street, New York, NY 10001"
-          },
-          "phone": {
-            "type": "string",
-            "description": "Restaurant phone number",
-            "example": "+1-234-567-8900"
-          },
-          "description": {
-            "type": "string",
-            "description": "Restaurant description",
-            "example": "Authentic Italian cuisine in the heart of the city"
-          },
-          "rating": {
-            "type": "number",
-            "format": "float",
-            "minimum": 0,
-            "maximum": 5,
-            "description": "Restaurant rating",
-            "example": 4.5
-          },
-          "image": {
-            "type": "string",
-            "description": "Restaurant image URL",
-            "example": "https://example.com/images/restaurant.jpg"
-          },
-          "owner": {
-            "type": "string",
-            "description": "Owner user ID reference",
-            "example": "60d5ec49f1b2c72b8c8e4f1a"
-          },
-          "createdAt": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "updatedAt": {
-            "type": "string",
-            "format": "date-time"
+            "format": "password",
+            "description": "User password",
+            "example": "SecurePass123!"
           }
         }
       },
-      "Cuisine": {
+      "AuthResponse": {
         "type": "object",
-        "required": ["name", "restaurant"],
         "properties": {
-          "_id": {
-            "type": "string",
-            "description": "Auto-generated cuisine ID",
-            "example": "60d5ec49f1b2c72b8c8e4f1c"
-          },
-          "name": {
-            "type": "string",
-            "description": "Cuisine name",
-            "example": "Margherita Pizza"
-          },
-          "description": {
-            "type": "string",
-            "description": "Cuisine description",
-            "example": "Classic Italian pizza with tomato, mozzarella, and basil"
-          },
-          "price": {
-            "type": "number",
-            "format": "float",
-            "description": "Cuisine price",
-            "example": 12.99
-          },
-          "category": {
-            "type": "string",
-            "description": "Cuisine category",
-            "example": "Pizza"
-          },
-          "image": {
-            "type": "string",
-            "description": "Cuisine image URL",
-            "example": "https://example.com/images/pizza.jpg"
-          },
-          "restaurant": {
-            "type": "string",
-            "description": "Restaurant ID reference",
-            "example": "60d5ec49f1b2c72b8c8e4f1b"
-          },
-          "isAvailable": {
+          "success": {
             "type": "boolean",
-            "default": true,
-            "description": "Availability status",
+            "description": "Indicates if the request was successful",
             "example": true
           },
-          "createdAt": {
+          "message": {
             "type": "string",
-            "format": "date-time"
+            "description": "Response message",
+            "example": "User registered successfully"
           },
-          "updatedAt": {
-            "type": "string",
-            "format": "date-time"
+          "data": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "example": "John Doe"
+              },
+              "email": {
+                "type": "string",
+                "example": "john@example.com"
+              },
+              "role": {
+                "type": "string",
+                "enum": ["customer", "restaurant", "captain"],
+                "example": "customer"
+              }
+            }
           }
         }
       },
-      "Error": {
+      "UserProfileResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "message": {
+            "type": "string",
+            "example": "User fetched successfully"
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "_id": {
+                "type": "string",
+                "description": "User's unique identifier",
+                "example": "507f1f77bcf86cd799439011"
+              },
+              "name": {
+                "type": "string",
+                "example": "John Doe"
+              },
+              "email": {
+                "type": "string",
+                "example": "john@example.com"
+              },
+              "role": {
+                "type": "string",
+                "enum": ["customer", "restaurant", "captain"],
+                "example": "customer"
+              },
+              "createdAt": {
+                "type": "string",
+                "format": "date-time",
+                "description": "Account creation timestamp",
+                "example": "2024-01-15T10:30:00.000Z"
+              },
+              "updatedAt": {
+                "type": "string",
+                "format": "date-time",
+                "description": "Last update timestamp",
+                "example": "2024-01-15T10:30:00.000Z"
+              }
+            }
+          }
+        }
+      },
+      "ErrorResponse": {
         "type": "object",
         "properties": {
           "success": {
@@ -1129,100 +476,24 @@
           },
           "message": {
             "type": "string",
-            "example": "Error message"
+            "description": "Error message",
+            "example": "An error occurred"
           },
           "errors": {
             "type": "array",
+            "description": "Detailed validation errors (if applicable)",
             "items": {
               "type": "object",
               "properties": {
                 "field": {
-                  "type": "string"
+                  "type": "string",
+                  "example": "email"
                 },
                 "message": {
-                  "type": "string"
+                  "type": "string",
+                  "example": "Invalid email format"
                 }
               }
-            }
-          }
-        }
-      },
-      "Success": {
-        "type": "object",
-        "properties": {
-          "success": {
-            "type": "boolean",
-            "example": true
-          },
-          "message": {
-            "type": "string",
-            "example": "Operation successful"
-          },
-          "data": {
-            "type": "object"
-          }
-        }
-      }
-    },
-    "responses": {
-      "UnauthorizedError": {
-        "description": "Authentication token is missing or invalid",
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/Error"
-            },
-            "example": {
-              "success": false,
-              "message": "Unauthorized access"
-            }
-          }
-        }
-      },
-      "ForbiddenError": {
-        "description": "User does not have permission to access this resource",
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/Error"
-            },
-            "example": {
-              "success": false,
-              "message": "Forbidden: Insufficient permissions"
-            }
-          }
-        }
-      },
-      "NotFoundError": {
-        "description": "Resource not found",
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/Error"
-            },
-            "example": {
-              "success": false,
-              "message": "Resource not found"
-            }
-          }
-        }
-      },
-      "ValidationError": {
-        "description": "Validation error",
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/Error"
-            },
-            "example": {
-              "success": false,
-              "message": "Validation failed",
-              "errors": [
-                {
-                  "field": "email",
-                  "message": "Invalid email format"
-                }
-              ]
             }
           }
         }

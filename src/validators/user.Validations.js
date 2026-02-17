@@ -52,3 +52,5 @@ export const userValidations = {
             .withMessage("Role must be either 'admin', 'user', 'captain', or 'owner'")
     ]
 };
+
+export default userValidations

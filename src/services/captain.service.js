@@ -1,4 +1,4 @@
-import { AppError } from "../utils/appError.js";
+import { AppError} from "#utils";
 import Captain from "../models/captain.model.js";
 import { v4 as uuidv4 } from 'uuid';
 

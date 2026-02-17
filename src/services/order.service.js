@@ -1,5 +1,5 @@
 import Order from '../models/order.model.js';
-import { AppError } from "../utils/appError.js";
+import { AppError } from "#utils"
 import { Cuisine } from '../models/cuisine.model.js';
 import { createTransaction } from './transaction.service.js';
 import { getCaptainById } from './captain.service.js';

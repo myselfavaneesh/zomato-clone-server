@@ -1,5 +1,5 @@
 import { Cuisine } from '../models/cuisine.model.js';
-import { AppError } from '../utils/AppError.js';
+import { AppError } from "#utils"
 import { getRestaurantById } from './restaurant.service.js';
 
 export const createCuisine = async (data) => {

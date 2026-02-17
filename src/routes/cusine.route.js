@@ -1,7 +1,6 @@
-import { authenticate, authorizeRoles } from '../middlewares/authMiddleware.js';
 import express from 'express';
-import validate from '../middlewares/validationMiddleware.js';
 import multer from 'multer';
+import { authMiddleware, validate } from "#middlewares"
 
 const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage() })
@@ -12,11 +11,11 @@ import { cuisineValidations } from '../validators/cuisine.Validations.js';
 
 
 
-router.post('/', authenticate, authorizeRoles('admin', "owner"), cuisineValidations.createCuisine, validate, createCuisineController);
-router.get('/restaurant/:restaurantId', getAllCuisinesController);
+router.post('/', authMiddleware.authenticate, authMiddleware.authorizeRoles('admin', "owner"), cuisineValidations.createCuisine, validate, createCuisineController);
+router.get('/restaurant/:restaurantId', authMiddleware.authenticate, getAllCuisinesController);
 router.get('/:id', getCuisineByIdController);
-router.put('/:id', authenticate, authorizeRoles('admin', 'owner'), cuisineValidations.updateCuisine, validate, updateCuisineController);
-router.delete('/:id', authenticate, authorizeRoles('admin', 'owner'), deleteCuisineController);
+router.put('/:id', authMiddleware.authenticate, authMiddleware.authorizeRoles('admin', 'owner'), cuisineValidations.updateCuisine, validate, updateCuisineController);
+router.delete('/:id', authMiddleware.authenticate, authMiddleware.authorizeRoles('admin', 'owner'), deleteCuisineController);
 
 
 export default router;

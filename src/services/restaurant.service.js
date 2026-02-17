@@ -1,12 +1,11 @@
 import { Restaurant } from "../models/restaurant.model.js";
 import User from "../models/user.model.js";
-import { AppError } from "../utils/AppError.js";
+import { AppError } from "#utils"
 
-import { sendResponse } from "../utils/res.utils.js";
 export const createRestaurant = async (data) => {
     const existingOwner = await User.findOne({ _id: data.owner });
     if (!existingOwner) {
-        throw new AppError("Owner not found",  );
+        throw new AppError("Owner not found",);
     }
 
     const existingRestaurant = await Restaurant.findOne({ name: data.name });
